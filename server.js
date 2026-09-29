@@ -18,15 +18,16 @@ app.use(session({
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 🟢 ใส่ค่าสำรองตรงๆ เผื่อกรณี Render อ่าน Environment Variable ผิดพลาด
-const DEFAULT_URL = 'libsql://pharmacy-db-karang.aws-ap-northeast-1.turso.io';
+// 🟢 ใช้ Canonical URL ของ Turso (ไม่มีชื่อภูมิภาค aws-ap-northeast-1)
+const DEFAULT_URL = 'libsql://pharmacy-db-karang.turso.io';
 const DEFAULT_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3OTA2NzE3NjQsImlkIjoiMDFhMGVjNTktYWEwMS03OWUwLWI0ZGQtODZkY2Y3YTc3YmQyIiwia2lkIjoiWFNTRnRuU3ZPRTJTT0VDbl9tZjZTM3pmald6S3ZQWUQtdUR4V2Q4am5lcyIsInJpZCI6IjhjMDBkNTdjLWUxNjItNDg1NC05ZjkxLWIwNjhjYWQ5ZGQyNCJ9.BvfkDT76FQhM2gwDhFAcnQ61AEJ4cRSPQ1pRCPg2WXTWw0FyzxtqAvnv6BAlZNV5Rn1etrhi_7kiQJa2DUJfAw';
 
-const tursoUrl = (process.env.TURSO_DATABASE_URL || DEFAULT_URL).trim().replace(/^["']|["']$/g, '').replace(/\/+$/, '');
-const tursoToken = (process.env.TURSO_AUTH_TOKEN || DEFAULT_TOKEN).trim().replace(/^["']|["']$/g, '');
+// ทำความสะอาด URL โดยลบส่วนเกินและตัด .aws-ap-northeast-1 ออกอัตโนมัติ
+let rawUrl = process.env.TURSO_DATABASE_URL || DEFAULT_URL;
+rawUrl = rawUrl.replace('.aws-ap-northeast-1', '');
 
-console.log('--- STARTING TURSO DB CONNECTION ---');
-console.log('Using URL:', tursoUrl);
+const tursoUrl = rawUrl.trim().replace(/^["']|["']$/g, '').replace(/\/+$/, '');
+const tursoToken = (process.env.TURSO_AUTH_TOKEN || DEFAULT_TOKEN).trim().replace(/^["']|["']$/g, '');
 
 const db = createClient({
   url: tursoUrl,
@@ -35,6 +36,11 @@ const db = createClient({
 
 async function initDb() {
   try {
+    // ทดสอบการเชื่อมต่อ
+    await db.execute('SELECT 1');
+    console.log('✅ Connected to Turso Cloud Database successfully!');
+    
+    // สร้างตารางข้อมูล
     await db.execute(`
       CREATE TABLE IF NOT EXISTS medicines (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,9 +53,8 @@ async function initDb() {
         image TEXT
       )
     `);
-    console.log('✅ Connected to Turso Cloud Database successfully!');
   } catch (err) {
-    console.error('❌ Turso DB Connection Error:', err.message);
+    console.error('Turso DB Warning/Error:', err.message);
   }
 }
 initDb();
