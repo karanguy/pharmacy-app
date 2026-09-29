@@ -42,7 +42,7 @@ const requireAuth = (req, res, next) => {
 
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
-  if (username === 'admin' && password === '123456') {
+  if (username === 'admin' && password === '25430') {
     req.session.user = { username };
     res.json({ success: true });
   } else {
