@@ -6,7 +6,6 @@ const { createClient } = require('@libsql/client');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ขยายขนาดรองรับรูปภาพ Base64
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
@@ -19,17 +18,21 @@ app.use(session({
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 🟢 ตัดช่องว่าง, อัญประกาศ และเครื่องหมาย / ท้ายสุดออกให้อัตโนมัติ
-// 🟢 ดึงค่าและตัดช่องว่าง/สแลชท้ายออกอัตโนมัติ
-const tursoUrl = (process.env.TURSO_DATABASE_URL || '').trim().replace(/\/+$/, '');
-const tursoToken = (process.env.TURSO_AUTH_TOKEN || '').trim();
+// 🟢 กำหนดค่า URL และ Token พร้อมลบช่องว่าง/เครื่องหมายคำพูด/สแลชท้ายสุด
+const rawUrl = process.env.TURSO_DATABASE_URL || 'libsql://pharmacy-db-karang.aws-ap-northeast-1.turso.io';
+const rawToken = process.env.TURSO_AUTH_TOKEN || '';
+
+const tursoUrl = rawUrl.trim().replace(/^["']|["']$/g, '').replace(/\/+$/, '');
+const tursoToken = rawToken.trim().replace(/^["']|["']$/g, '');
+
+console.log('Connecting to Turso URL:', tursoUrl);
+console.log('Turso Token Length:', tursoToken.length);
 
 const db = createClient({
   url: tursoUrl,
   authToken: tursoToken,
 });
 
-// สร้างตารางข้อมูลอัตโนมัติบน Cloud
 async function initDb() {
   try {
     await db.execute(`
@@ -44,20 +47,18 @@ async function initDb() {
         image TEXT
       )
     `);
-    console.log('Connected to Turso Cloud Database successfully.');
+    console.log('✅ Connected to Turso Cloud Database successfully!');
   } catch (err) {
-    console.error('Turso DB Connection Error:', err);
+    console.error('❌ Turso DB Connection Error:', err.message);
   }
 }
 initDb();
 
-// Middleware เช็กการล็อกอิน
 const requireAuth = (req, res, next) => {
   if (req.session && req.session.user) next();
   else res.status(401).json({ error: 'Unauthorized' });
 };
 
-// API Routes
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
   if (username === 'admin' && password === '2543') {
@@ -77,7 +78,6 @@ app.get('/api/check-auth', (req, res) => {
   res.json({ loggedIn: !!(req.session && req.session.user) });
 });
 
-// ดึงรายการยาทั้งหมด
 app.get('/api/medicines', requireAuth, async (req, res) => {
   try {
     const result = await db.execute('SELECT * FROM medicines ORDER BY id DESC');
@@ -87,7 +87,6 @@ app.get('/api/medicines', requireAuth, async (req, res) => {
   }
 });
 
-// เพิ่มรายการยาใหม่
 app.post('/api/medicines', requireAuth, async (req, res) => {
   const { code, name, category, quantity, unit, min_threshold, image } = req.body;
   try {
@@ -101,7 +100,6 @@ app.post('/api/medicines', requireAuth, async (req, res) => {
   }
 });
 
-// แก้ไขข้อมูลยา
 app.put('/api/medicines/:id', requireAuth, async (req, res) => {
   const { code, name, category, quantity, unit, min_threshold, image } = req.body;
   try {
@@ -115,7 +113,6 @@ app.put('/api/medicines/:id', requireAuth, async (req, res) => {
   }
 });
 
-// ปรับจำนวนสต๊อก (+1 / -1)
 app.post('/api/medicines/:id/adjust', requireAuth, async (req, res) => {
   const { amount } = req.body;
   try {
@@ -129,7 +126,6 @@ app.post('/api/medicines/:id/adjust', requireAuth, async (req, res) => {
   }
 });
 
-// ลบรายการยา
 app.delete('/api/medicines/:id', requireAuth, async (req, res) => {
   try {
     await db.execute({
