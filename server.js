@@ -19,7 +19,7 @@ app.use(session({
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 🟢 ใช้ Canonical URL ของ Turso (ไม่มีชื่อภูมิภาค aws-ap-northeast-1)
-const DEFAULT_URL = 'libsql://pharmacy-db-karang.turso.io';
+const DEFAULT_URL = 'https://pharmacy-db-karang.turso.io';
 const DEFAULT_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3OTA2NzE3NjQsImlkIjoiMDFhMGVjNTktYWEwMS03OWUwLWI0ZGQtODZkY2Y3YTc3YmQyIiwia2lkIjoiWFNTRnRuU3ZPRTJTT0VDbl9tZjZTM3pmald6S3ZQWUQtdUR4V2Q4am5lcyIsInJpZCI6IjhjMDBkNTdjLWUxNjItNDg1NC05ZjkxLWIwNjhjYWQ5ZGQyNCJ9.BvfkDT76FQhM2gwDhFAcnQ61AEJ4cRSPQ1pRCPg2WXTWw0FyzxtqAvnv6BAlZNV5Rn1etrhi_7kiQJa2DUJfAw';
 
 // ทำความสะอาด URL โดยลบส่วนเกินและตัด .aws-ap-northeast-1 ออกอัตโนมัติ
