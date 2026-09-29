@@ -97,16 +97,26 @@ app.put('/api/medicines/:id', requireAuth, async (req, res) => {
   }
 });
 
-app.post('/api/medicines/:id/adjust', requireAuth, async (req, res) => {
-  const { amount } = req.body;
+app.post('/api/medicines', requireAuth, async (req, res) => {
+  const { code, name, category, quantity, unit, min_threshold, image } = req.body;
   try {
-    await pool.query(
-      `UPDATE medicines SET quantity = GREATEST(0, quantity + $1) WHERE id = $2`,
-      [amount, req.params.id]
+    const result = await pool.query(
+      `INSERT INTO medicines (code, name, category, quantity, unit, min_threshold, image) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+      [
+        code, 
+        name, 
+        category, 
+        parseInt(quantity, 10) || 0, 
+        unit || 'เม็ด', 
+        parseInt(min_threshold, 10) || 10, 
+        image || ''
+      ]
     );
-    res.json({ success: true });
+    res.json({ success: true, id: result.rows[0].id });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error('❌ Insert Error:', err.message);
+    res.status(400).json({ error: err.message }); // ส่งข้อความ Error จริงจาก PostgreSQL ออกมาแสดง
   }
 });
 
