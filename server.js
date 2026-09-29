@@ -20,8 +20,9 @@ app.use(session({
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 🟢 ตัดช่องว่าง, อัญประกาศ และเครื่องหมาย / ท้ายสุดออกให้อัตโนมัติ
-const tursoUrl = (process.env.TURSO_DATABASE_URL || '').trim().replace(/^["']|["']$/g, '').replace(/\/+$/, '');
-const tursoToken = (process.env.TURSO_AUTH_TOKEN || '').trim().replace(/^["']|["']$/g, '');
+// 🟢 ดึงค่าและตัดช่องว่าง/สแลชท้ายออกอัตโนมัติ
+const tursoUrl = (process.env.TURSO_DATABASE_URL || '').trim().replace(/\/+$/, '');
+const tursoToken = (process.env.TURSO_AUTH_TOKEN || '').trim();
 
 const db = createClient({
   url: tursoUrl,
