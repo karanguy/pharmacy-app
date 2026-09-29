@@ -19,10 +19,14 @@ app.use(session({
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 🟢 เชื่อมต่อกับ Turso Cloud Database ผ่าน Environment Variables
+// 🟢 ทำความสะอาดค่า URL และ Token ตัดช่องว่าง/เครื่องหมายคำพูดส่วนเกินออก
+const tursoUrl = (process.env.TURSO_DATABASE_URL || '').trim().replace(/^["']|["']$/g, '');
+const tursoToken = (process.env.TURSO_AUTH_TOKEN || '').trim().replace(/^["']|["']$/g, '');
+
+// เชื่อมต่อ Turso Cloud Database
 const db = createClient({
-  url: process.env.TURSO_DATABASE_URL || '',
-  authToken: process.env.TURSO_AUTH_TOKEN || '',
+  url: tursoUrl,
+  authToken: tursoToken,
 });
 
 // สร้างตารางข้อมูลอัตโนมัติบน Cloud
@@ -56,7 +60,7 @@ const requireAuth = (req, res, next) => {
 // API Routes
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
-  if (username === 'admin' && password === '123456') {
+  if (username === 'admin' && password === '2543') {
     req.session.user = { username };
     res.json({ success: true });
   } else {
