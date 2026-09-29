@@ -18,15 +18,15 @@ app.use(session({
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 🟢 กำหนดค่า URL และ Token พร้อมลบช่องว่าง/เครื่องหมายคำพูด/สแลชท้ายสุด
-const rawUrl = process.env.TURSO_DATABASE_URL || 'libsql://pharmacy-db-karang.aws-ap-northeast-1.turso.io';
-const rawToken = process.env.TURSO_AUTH_TOKEN || '';
+// 🟢 ใส่ค่าสำรองตรงๆ เผื่อกรณี Render อ่าน Environment Variable ผิดพลาด
+const DEFAULT_URL = 'libsql://pharmacy-db-karang.aws-ap-northeast-1.turso.io';
+const DEFAULT_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3OTA2NzE3NjQsImlkIjoiMDFhMGVjNTktYWEwMS03OWUwLWI0ZGQtODZkY2Y3YTc3YmQyIiwia2lkIjoiWFNTRnRuU3ZPRTJTT0VDbl9tZjZTM3pmald6S3ZQWUQtdUR4V2Q4am5lcyIsInJpZCI6IjhjMDBkNTdjLWUxNjItNDg1NC05ZjkxLWIwNjhjYWQ5ZGQyNCJ9.BvfkDT76FQhM2gwDhFAcnQ61AEJ4cRSPQ1pRCPg2WXTWw0FyzxtqAvnv6BAlZNV5Rn1etrhi_7kiQJa2DUJfAw';
 
-const tursoUrl = rawUrl.trim().replace(/^["']|["']$/g, '').replace(/\/+$/, '');
-const tursoToken = rawToken.trim().replace(/^["']|["']$/g, '');
+const tursoUrl = (process.env.TURSO_DATABASE_URL || DEFAULT_URL).trim().replace(/^["']|["']$/g, '').replace(/\/+$/, '');
+const tursoToken = (process.env.TURSO_AUTH_TOKEN || DEFAULT_TOKEN).trim().replace(/^["']|["']$/g, '');
 
-console.log('Connecting to Turso URL:', tursoUrl);
-console.log('Turso Token Length:', tursoToken.length);
+console.log('--- STARTING TURSO DB CONNECTION ---');
+console.log('Using URL:', tursoUrl);
 
 const db = createClient({
   url: tursoUrl,
@@ -61,7 +61,7 @@ const requireAuth = (req, res, next) => {
 
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
-  if (username === 'admin' && password === '2543') {
+  if (username === 'admin' && password === '123456') {
     req.session.user = { username };
     res.json({ success: true });
   } else {
