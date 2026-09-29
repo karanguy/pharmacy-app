@@ -1,7 +1,7 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
-const { createClient } = require('@libsql/client');
+const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,33 +18,19 @@ app.use(session({
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ดึงค่าจาก Environment Variables ของ Render
-const tursoUrl = (process.env.TURSO_DATABASE_URL || '').trim().replace(/^["']|["']$/g, '').replace(/\/+$/, '');
-const tursoToken = (process.env.TURSO_AUTH_TOKEN || '').trim().replace(/^["']|["']$/g, '');
-
-const db = createClient({
-  url: tursoUrl,
-  authToken: tursoToken,
+// เชื่อมต่อฐานข้อมูล PostgreSQL บน Neon
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false } // จำเป็นสำหรับ Neon
 });
 
+// ทดสอบการเชื่อมต่อ
 async function initDb() {
   try {
-    // 1. สร้างตารางถ้ายังไม่มี
-    await db.execute(`
-      CREATE TABLE IF NOT EXISTS medicines (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        code TEXT NOT NULL UNIQUE,
-        name TEXT NOT NULL,
-        category TEXT,
-        quantity INTEGER DEFAULT 0,
-        unit TEXT DEFAULT 'เม็ด',
-        min_threshold INTEGER DEFAULT 10,
-        image TEXT
-      )
-    `);
-    console.log('✅ Connected to Turso Cloud Database successfully!');
+    await pool.query('SELECT 1');
+    console.log('✅ Connected to Neon PostgreSQL Database successfully!');
   } catch (err) {
-    console.error('❌ Turso DB Error:', err.message);
+    console.error('❌ Database Connection Error:', err.message);
   }
 }
 initDb();
@@ -56,7 +42,7 @@ const requireAuth = (req, res, next) => {
 
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
-  if (username === 'admin' && password === '25430') {
+  if (username === 'admin' && password === '123456') {
     req.session.user = { username };
     res.json({ success: true });
   } else {
@@ -75,7 +61,7 @@ app.get('/api/check-auth', (req, res) => {
 
 app.get('/api/medicines', requireAuth, async (req, res) => {
   try {
-    const result = await db.execute('SELECT * FROM medicines ORDER BY id DESC');
+    const result = await pool.query('SELECT * FROM medicines ORDER BY id DESC');
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -85,11 +71,12 @@ app.get('/api/medicines', requireAuth, async (req, res) => {
 app.post('/api/medicines', requireAuth, async (req, res) => {
   const { code, name, category, quantity, unit, min_threshold, image } = req.body;
   try {
-    const result = await db.execute({
-      sql: `INSERT INTO medicines (code, name, category, quantity, unit, min_threshold, image) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      args: [code, name, category, quantity || 0, unit || 'เม็ด', min_threshold || 10, image || '']
-    });
-    res.json({ success: true, id: Number(result.lastInsertRowid) });
+    const result = await pool.query(
+      `INSERT INTO medicines (code, name, category, quantity, unit, min_threshold, image) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+      [code, name, category, quantity || 0, unit || 'เม็ด', min_threshold || 10, image || '']
+    );
+    res.json({ success: true, id: result.rows[0].id });
   } catch (err) {
     res.status(400).json({ error: 'รหัสยานี้มีในระบบแล้ว หรือข้อมูลไม่ถูกต้อง' });
   }
@@ -98,10 +85,12 @@ app.post('/api/medicines', requireAuth, async (req, res) => {
 app.put('/api/medicines/:id', requireAuth, async (req, res) => {
   const { code, name, category, quantity, unit, min_threshold, image } = req.body;
   try {
-    await db.execute({
-      sql: `UPDATE medicines SET code = ?, name = ?, category = ?, quantity = ?, unit = ?, min_threshold = ?, image = ? WHERE id = ?`,
-      args: [code, name, category, quantity, unit, min_threshold, image || '', req.params.id]
-    });
+    await pool.query(
+      `UPDATE medicines 
+       SET code = $1, name = $2, category = $3, quantity = $4, unit = $5, min_threshold = $6, image = $7 
+       WHERE id = $8`,
+      [code, name, category, quantity, unit, min_threshold, image || '', req.params.id]
+    );
     res.json({ success: true });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -111,10 +100,10 @@ app.put('/api/medicines/:id', requireAuth, async (req, res) => {
 app.post('/api/medicines/:id/adjust', requireAuth, async (req, res) => {
   const { amount } = req.body;
   try {
-    await db.execute({
-      sql: `UPDATE medicines SET quantity = MAX(0, quantity + ?) WHERE id = ?`,
-      args: [amount, req.params.id]
-    });
+    await pool.query(
+      `UPDATE medicines SET quantity = GREATEST(0, quantity + $1) WHERE id = $2`,
+      [amount, req.params.id]
+    );
     res.json({ success: true });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -123,10 +112,7 @@ app.post('/api/medicines/:id/adjust', requireAuth, async (req, res) => {
 
 app.delete('/api/medicines/:id', requireAuth, async (req, res) => {
   try {
-    await db.execute({
-      sql: `DELETE FROM medicines WHERE id = ?`,
-      args: [req.params.id]
-    });
+    await pool.query('DELETE FROM medicines WHERE id = $1', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
     res.status(400).json({ error: err.message });
