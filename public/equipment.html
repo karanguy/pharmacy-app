@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบจัดการสต๊อกยา - Dashboard</title>
+  <title>ระบบจัดการสต๊อกอุปกรณ์ - Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style> body { font-family: 'Sarabun', sans-serif; } </style>
@@ -14,9 +14,9 @@
   <div id="loginPage" class="flex items-center justify-center min-h-screen px-4">
     <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
       <div class="text-center mb-6">
-        <span class="text-5xl">💊</span>
+        <span class="text-5xl">📦</span>
         <h1 class="text-2xl font-bold text-gray-800 mt-2">ล็อกอินเข้าสู่ระบบ</h1>
-        <p class="text-gray-500 text-sm">ระบบจัดการสต๊อกคลังยา</p>
+        <p class="text-gray-500 text-sm">ระบบจัดการสต๊อกอุปกรณ์ทางการแพทย์</p>
       </div>
       <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
         <div>
@@ -38,13 +38,13 @@
     <nav class="bg-indigo-600 text-white shadow-md">
       <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
         <div class="flex items-center space-x-3">
-          <span class="text-2xl">💊</span>
-          <h1 class="text-xl font-bold">ระบบจัดการสต๊อกยา</h1>
+          <span class="text-2xl">📦</span>
+          <h1 class="text-xl font-bold">ระบบจัดการสต๊อกอุปกรณ์</h1>
         </div>
-        <!-- กลุ่มปุ่มเมนูด้านขวา -->
+        <!-- ปุ่มสลับไปหน้าสต๊อกยา และ ออกจากระบบ -->
         <div class="flex items-center space-x-2">
-          <a href="/equipment.html" class="bg-indigo-500 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-1">
-            📦 อุปกรณ์
+          <a href="/" class="bg-indigo-500 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-1">
+            💊 สต๊อกยา
           </a>
           <button onclick="handleLogout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
             ออกจากระบบ
@@ -60,10 +60,10 @@
         <div id="cardAll" onclick="setFilter('all')" class="cursor-pointer bg-white p-5 rounded-2xl shadow-sm border-2 border-indigo-500 hover:shadow-md transition duration-200 flex items-center justify-between relative group">
           <div>
             <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wider flex items-center gap-1">
-              <span>📋</span> รายการยาทั้งหมด
+              <span>📋</span> รายการอุปกรณ์ทั้งหมด
             </p>
             <h3 id="statTotalItems" class="text-3xl font-extrabold text-gray-800 mt-1">0</h3>
-            <p class="text-xs text-gray-400 mt-1">รายการยาในระบบทั้งหมด</p>
+            <p class="text-xs text-gray-400 mt-1">รายการอุปกรณ์ในระบบทั้งหมด</p>
           </div>
           <div class="w-12 h-12 bg-indigo-50 group-hover:bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl transition">📋</div>
           <div id="badgeAllActive" class="absolute top-3 right-3 w-3 h-3 bg-indigo-600 rounded-full"></div>
@@ -83,7 +83,7 @@
 
         <div class="bg-white p-5 rounded-2xl shadow-sm border-2 border-transparent flex items-center justify-between">
           <div>
-            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">หมวดหมู่ยา</p>
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">หมวดหมู่อุปกรณ์</p>
             <h3 id="statCategories" class="text-3xl font-extrabold text-emerald-600 mt-1">0</h3>
             <p class="text-xs text-gray-400 mt-1">หมวดหมู่ที่มีในระบบ</p>
           </div>
@@ -91,12 +91,12 @@
         </div>
       </div>
 
-      <!-- FORM เพิ่มยาใหม่ -->
+      <!-- FORM เพิ่มอุปกรณ์ใหม่ -->
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
         <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <span class="text-indigo-600">➕</span> เพิ่มรายการยาใหม่
+          <span class="text-indigo-600">➕</span> เพิ่มรายการอุปกรณ์ใหม่
         </h2>
-        <form onsubmit="handleCreateMedicine(event)" class="space-y-4">
+        <form onsubmit="handleCreateEquipment(event)" class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4 items-start">
             
             <div>
@@ -109,18 +109,18 @@
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">รหัสยา <span class="text-red-500">*</span></label>
-              <input type="text" id="add_code" placeholder="เช่น MED01" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <label class="block text-xs font-semibold text-gray-600 mb-1">รหัสอุปกรณ์ <span class="text-red-500">*</span></label>
+              <input type="text" id="add_code" placeholder="เช่น EQ01" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-gray-600 mb-1">ชื่อยา <span class="text-red-500">*</span></label>
-              <input type="text" id="add_name" placeholder="เช่น พาราเซตามอล" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <label class="block text-xs font-semibold text-gray-600 mb-1">ชื่ออุปกรณ์ <span class="text-red-500">*</span></label>
+              <input type="text" id="add_name" placeholder="เช่น เครื่องวัดความดัน" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-gray-600 mb-1">หมวดหมู่</label>
-              <input type="text" id="add_category" placeholder="เช่น ยาแก้ปวด" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <input type="text" id="add_category" placeholder="เช่น เครื่องมือตรวจ" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
             </div>
 
             <div>
@@ -130,23 +130,23 @@
 
             <div>
               <label class="block text-xs font-semibold text-gray-600 mb-1">หน่วยนับ</label>
-              <input type="text" id="add_unit" value="เม็ด" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <input type="text" id="add_unit" value="ชิ้น" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-gray-600 mb-1">เตือนเมื่อน้อยกว่า</label>
-              <input type="number" id="add_min" min="0" value="10" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <input type="number" id="add_min" min="0" value="5" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
             </div>
 
           </div>
 
           <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-lg transition duration-150 flex items-center justify-center gap-2">
-            <span>💾</span> บันทึกยาใหม่
+            <span>💾</span> บันทึกอุปกรณ์ใหม่
           </button>
         </form>
       </div>
 
-      <!-- ตารางแสดงรายการยา -->
+      <!-- ตารางแสดงรายการอุปกรณ์ -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div class="flex items-center gap-2">
@@ -154,8 +154,8 @@
             <span id="filterStatusBadge" class="bg-indigo-100 text-indigo-700 text-xs px-2.5 py-0.5 rounded-full font-semibold">แสดงทั้งหมด</span>
           </div>
           <div class="flex items-center gap-3">
-            <button onclick="setFilter('all')" id="btnClearFilter" class="hidden text-xs text-indigo-600 hover:underline font-medium">← ดูยาทั้งหมด</button>
-            <button onclick="fetchMedicines()" class="text-sm text-gray-600 hover:text-indigo-600 flex items-center gap-1">🔄 รีเฟรช</button>
+            <button onclick="setFilter('all')" id="btnClearFilter" class="hidden text-xs text-indigo-600 hover:underline font-medium">← ดูทั้งหมด</button>
+            <button onclick="fetchEquipments()" class="text-sm text-gray-600 hover:text-indigo-600 flex items-center gap-1">🔄 รีเฟรช</button>
           </div>
         </div>
 
@@ -164,8 +164,8 @@
             <thead>
               <tr class="bg-gray-50 text-gray-600 border-b">
                 <th class="p-4 text-center">รูปภาพ</th>
-                <th class="p-4">รหัสยา</th>
-                <th class="p-4">ชื่อยา</th>
+                <th class="p-4">รหัสอุปกรณ์</th>
+                <th class="p-4">ชื่ออุปกรณ์</th>
                 <th class="p-4">หมวดหมู่</th>
                 <th class="p-4 text-center">คงเหลือ</th>
                 <th class="p-4">หน่วย</th>
@@ -174,18 +174,18 @@
                 <th class="p-4 text-center">จัดการ</th>
               </tr>
             </thead>
-            <tbody id="medicineTableBody" class="divide-y divide-gray-100"></tbody>
+            <tbody id="equipmentTableBody" class="divide-y divide-gray-100"></tbody>
           </table>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal แก้ไขยา -->
+  <!-- Modal แก้ไขอุปกรณ์ -->
   <div id="editModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-6 w-full max-w-lg space-y-4">
-      <h3 class="text-lg font-bold text-gray-800">แก้ไขข้อมูลยา</h3>
-      <form onsubmit="handleUpdateMedicine(event)" class="space-y-3">
+      <h3 class="text-lg font-bold text-gray-800">แก้ไขข้อมูลอุปกรณ์</h3>
+      <form onsubmit="handleUpdateEquipment(event)" class="space-y-3">
         <input type="hidden" id="edit_id">
         
         <div>
@@ -197,11 +197,11 @@
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">รหัสยา</label>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">รหัสอุปกรณ์</label>
           <input type="text" id="edit_code" required class="w-full px-3 py-2 border rounded-lg text-sm">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">ชื่อยา</label>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">ชื่ออุปกรณ์</label>
           <input type="text" id="edit_name" required class="w-full px-3 py-2 border rounded-lg text-sm">
         </div>
         <div class="grid grid-cols-2 gap-3">
@@ -242,7 +242,7 @@
   </div>
 
   <script>
-    let currentMedicines = [];
+    let currentEquipments = [];
     let currentFilter = 'all';
     let addImageBase64 = '';
     let editImageBase64 = '';
@@ -262,7 +262,7 @@
     function showApp() {
       document.getElementById('loginPage').classList.add('hidden');
       document.getElementById('appPage').classList.remove('hidden');
-      fetchMedicines();
+      fetchEquipments();
     }
 
     async function handleLogin(e) {
@@ -292,7 +292,6 @@
       showLogin();
     }
 
-    // ย่อขนาดรูปภาพแบบอัตโนมัติ
     function compressImage(file, maxWidth = 600, maxHeight = 600, quality = 0.7) {
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -347,19 +346,19 @@
       }
     }
 
-    async function fetchMedicines() {
-      const res = await fetch('/api/medicines');
+    async function fetchEquipments() {
+      const res = await fetch('/api/equipments');
       if (res.status === 401) return showLogin();
-      currentMedicines = await res.json();
+      currentEquipments = await res.json();
       
-      updateDashboard(currentMedicines);
+      updateDashboard(currentEquipments);
       renderTable();
     }
 
-    function updateDashboard(medicines) {
-      document.getElementById('statTotalItems').textContent = medicines.length.toLocaleString();
-      document.getElementById('statLowStock').textContent = medicines.filter(item => item.quantity <= item.min_threshold).length.toLocaleString();
-      document.getElementById('statCategories').textContent = new Set(medicines.map(item => item.category).filter(Boolean)).size.toLocaleString();
+    function updateDashboard(equipments) {
+      document.getElementById('statTotalItems').textContent = equipments.length.toLocaleString();
+      document.getElementById('statLowStock').textContent = equipments.filter(item => item.quantity <= item.min_threshold).length.toLocaleString();
+      document.getElementById('statCategories').textContent = new Set(equipments.map(item => item.category).filter(Boolean)).size.toLocaleString();
     }
 
     function setFilter(type) {
@@ -378,7 +377,7 @@
         badgeAll.classList.add('hidden');
         badgeLow.classList.remove('hidden');
 
-        tableTitle.textContent = '⚠️ รายการยาที่สต๊อกใกล้หมด';
+        tableTitle.textContent = '⚠️ รายการอุปกรณ์ที่สต๊อกใกล้หมด';
         badgeStatus.textContent = 'กรองเฉพาะใกล้หมด';
         badgeStatus.className = 'bg-red-100 text-red-700 text-xs px-2.5 py-0.5 rounded-full font-semibold';
         btnClear.classList.remove('hidden');
@@ -398,54 +397,54 @@
     }
 
     function renderTable() {
-      const tbody = document.getElementById('medicineTableBody');
+      const tbody = document.getElementById('equipmentTableBody');
 
-      let list = currentMedicines;
+      let list = currentEquipments;
       if (currentFilter === 'low') {
-        list = currentMedicines.filter(med => med.quantity <= med.min_threshold);
+        list = currentEquipments.filter(item => item.quantity <= item.min_threshold);
       }
 
       if (list.length === 0) {
-        const msg = currentFilter === 'low' ? 'ไม่มีรายการยาที่สต๊อกใกล้หมด 👍' : 'ยังไม่มีรายการยาในระบบ';
+        const msg = currentFilter === 'low' ? 'ไม่มีรายการอุปกรณ์ที่สต๊อกใกล้หมด 👍' : 'ยังไม่มีรายการอุปกรณ์ในระบบ';
         tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-gray-400">${msg}</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = list.map(med => {
-        const isLowStock = med.quantity <= med.min_threshold;
+      tbody.innerHTML = list.map(item => {
+        const isLowStock = item.quantity <= item.min_threshold;
         const statusBadge = isLowStock
           ? `<span class="bg-red-100 text-red-700 px-2.5 py-1 rounded-full text-xs font-semibold">สต๊อกต่ำ</span>`
           : `<span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full text-xs font-semibold">ปกติ</span>`;
 
-        const imageHtml = med.image && med.image.startsWith('data:image')
-          ? `<img src="${med.image}" onclick="openImageModal('${med.image}', '${med.name}')" class="w-12 h-12 object-cover rounded-lg border shadow-sm mx-auto cursor-pointer hover:opacity-80 transition" title="คลิกเพื่อขยาย">`
-          : `<div class="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center text-xl mx-auto text-gray-400 border border-slate-200">💊</div>`;
+        const imageHtml = item.image && item.image.startsWith('data:image')
+          ? `<img src="${item.image}" onclick="openImageModal('${item.image}', '${item.name}')" class="w-12 h-12 object-cover rounded-lg border shadow-sm mx-auto cursor-pointer hover:opacity-80 transition" title="คลิกเพื่อขยาย">`
+          : `<div class="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center text-xl mx-auto text-gray-400 border border-slate-200">📦</div>`;
 
         return `
           <tr class="hover:bg-slate-50 transition border-b border-gray-100">
             <td class="p-3 text-center">${imageHtml}</td>
-            <td class="p-4 font-semibold text-gray-700">${med.code}</td>
-            <td class="p-4 font-medium text-gray-900">${med.name}</td>
-            <td class="p-4 text-gray-500">${med.category || '-'}</td>
-            <td class="p-4 text-center font-bold text-lg ${isLowStock ? 'text-red-600' : 'text-gray-800'}">${med.quantity}</td>
-            <td class="p-4 text-gray-500">${med.unit}</td>
+            <td class="p-4 font-semibold text-gray-700">${item.code}</td>
+            <td class="p-4 font-medium text-gray-900">${item.name}</td>
+            <td class="p-4 text-gray-500">${item.category || '-'}</td>
+            <td class="p-4 text-center font-bold text-lg ${isLowStock ? 'text-red-600' : 'text-gray-800'}">${item.quantity}</td>
+            <td class="p-4 text-gray-500">${item.unit}</td>
             <td class="p-4 text-center">${statusBadge}</td>
             <td class="p-4 text-center">
               <div class="inline-flex rounded-md shadow-sm">
-                <button onclick="adjustStock(${med.id}, 1)" class="px-2.5 py-1 text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold rounded-l-lg border border-indigo-200">+1</button>
-                <button onclick="adjustStock(${med.id}, -1)" class="px-2.5 py-1 text-xs bg-amber-50 hover:bg-amber-100 text-amber-600 font-bold rounded-r-lg border border-amber-200 border-l-0">-1</button>
+                <button onclick="adjustStock(${item.id}, 1)" class="px-2.5 py-1 text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold rounded-l-lg border border-indigo-200">+1</button>
+                <button onclick="adjustStock(${item.id}, -1)" class="px-2.5 py-1 text-xs bg-amber-50 hover:bg-amber-100 text-amber-600 font-bold rounded-r-lg border border-amber-200 border-l-0">-1</button>
               </div>
             </td>
             <td class="p-4 text-center space-x-2">
-              <button onclick="openEditModal(${med.id})" class="text-indigo-600 hover:text-indigo-900 font-medium text-xs bg-indigo-50 px-2.5 py-1 rounded">แก้ไข</button>
-              <button onclick="deleteMedicine(${med.id}, '${med.name}')" class="text-red-600 hover:text-red-900 font-medium text-xs bg-red-50 px-2.5 py-1 rounded">ลบ</button>
+              <button onclick="openEditModal(${item.id})" class="text-indigo-600 hover:text-indigo-900 font-medium text-xs bg-indigo-50 px-2.5 py-1 rounded">แก้ไข</button>
+              <button onclick="deleteEquipment(${item.id}, '${item.name}')" class="text-red-600 hover:text-red-900 font-medium text-xs bg-red-50 px-2.5 py-1 rounded">ลบ</button>
             </td>
           </tr>
         `;
       }).join('');
     }
 
-    async function handleCreateMedicine(e) {
+    async function handleCreateEquipment(e) {
       e.preventDefault();
       const body = {
         code: document.getElementById('add_code').value,
@@ -457,7 +456,7 @@
         image: addImageBase64
       };
 
-      const res = await fetch('/api/medicines', {
+      const res = await fetch('/api/equipments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -469,39 +468,39 @@
         addImageBase64 = '';
         document.getElementById('add_image_preview').classList.add('hidden');
         document.getElementById('add_quantity').value = 0;
-        document.getElementById('add_unit').value = 'เม็ด';
-        document.getElementById('add_min').value = 10;
-        fetchMedicines();
+        document.getElementById('add_unit').value = 'ชิ้น';
+        document.getElementById('add_min').value = 5;
+        fetchEquipments();
       } else {
         alert(data.error || 'เกิดข้อผิดพลาดในการบันทึก');
       }
     }
 
     async function adjustStock(id, amount) {
-      await fetch(`/api/medicines/${id}/adjust`, {
+      await fetch(`/api/equipments/${id}/adjust`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount })
       });
-      fetchMedicines();
+      fetchEquipments();
     }
 
     function openEditModal(id) {
-      const med = currentMedicines.find(m => m.id === id);
-      if (!med) return;
+      const item = currentEquipments.find(e => e.id === id);
+      if (!item) return;
 
-      document.getElementById('edit_id').value = med.id;
-      document.getElementById('edit_code').value = med.code;
-      document.getElementById('edit_name').value = med.name;
-      document.getElementById('edit_category').value = med.category;
-      document.getElementById('edit_quantity').value = med.quantity;
-      document.getElementById('edit_unit').value = med.unit;
-      document.getElementById('edit_min').value = med.min_threshold;
+      document.getElementById('edit_id').value = item.id;
+      document.getElementById('edit_code').value = item.code;
+      document.getElementById('edit_name').value = item.name;
+      document.getElementById('edit_category').value = item.category;
+      document.getElementById('edit_quantity').value = item.quantity;
+      document.getElementById('edit_unit').value = item.unit;
+      document.getElementById('edit_min').value = item.min_threshold;
 
-      editImageBase64 = med.image || '';
+      editImageBase64 = item.image || '';
       const imgEl = document.getElementById('edit_image_preview');
-      if (med.image) {
-        imgEl.src = med.image;
+      if (item.image) {
+        imgEl.src = item.image;
         imgEl.classList.remove('hidden');
       } else {
         imgEl.classList.add('hidden');
@@ -516,7 +515,7 @@
       document.getElementById('editModal').classList.remove('flex');
     }
 
-    async function handleUpdateMedicine(e) {
+    async function handleUpdateEquipment(e) {
       e.preventDefault();
       const id = document.getElementById('edit_id').value;
       const body = {
@@ -529,7 +528,7 @@
         image: editImageBase64
       };
 
-      const res = await fetch(`/api/medicines/${id}`, {
+      const res = await fetch(`/api/equipments/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -538,19 +537,19 @@
 
       if (data.success) {
         closeEditModal();
-        fetchMedicines();
+        fetchEquipments();
       } else {
         alert(data.error || 'เกิดข้อผิดพลาดในการแก้ไข');
       }
     }
 
-    async function deleteMedicine(id, name) {
-      if (!confirm(`คุณต้องการลบรายการยา "${name}" ใช่หรือไม่?`)) return;
+    async function deleteEquipment(id, name) {
+      if (!confirm(`คุณต้องการลบรายการอุปกรณ์ "${name}" ใช่หรือไม่?`)) return;
 
-      const res = await fetch(`/api/medicines/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/equipments/${id}`, { method: 'DELETE' });
       const data = await res.json();
 
-      if (data.success) fetchMedicines();
+      if (data.success) fetchEquipments();
       else alert(data.error || 'เกิดข้อผิดพลาดในการลบ');
     }
 
