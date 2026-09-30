@@ -21,16 +21,27 @@ app.use(express.static(path.join(__dirname, 'public')));
 // เชื่อมต่อฐานข้อมูล PostgreSQL บน Neon
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false } // จำเป็นสำหรับ Neon
+  ssl: { rejectUnauthorized: false }
 });
 
-// ทดสอบการเชื่อมต่อ
+// ตรวจสอบและสั่งสร้างตารางอัตโนมัติหากยังไม่มี
 async function initDb() {
   try {
-    await pool.query('SELECT 1');
-    console.log('✅ Connected to Neon PostgreSQL Database successfully!');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS medicines (
+        id SERIAL PRIMARY KEY,
+        code VARCHAR(100) UNIQUE NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        category VARCHAR(100),
+        quantity INT DEFAULT 0,
+        unit VARCHAR(50) DEFAULT 'เม็ด',
+        min_threshold INT DEFAULT 10,
+        image TEXT
+      );
+    `);
+    console.log('✅ Connected & Table ready in Neon PostgreSQL Database!');
   } catch (err) {
-    console.error('❌ Database Connection Error:', err.message);
+    console.error('❌ Database Initialization Error:', err.message);
   }
 }
 initDb();
@@ -42,7 +53,7 @@ const requireAuth = (req, res, next) => {
 
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
-  if (username === 'admin' && password === '25430') {
+  if (username === 'admin' && password === '123456') {
     req.session.user = { username };
     res.json({ success: true });
   } else {
@@ -68,35 +79,7 @@ app.get('/api/medicines', requireAuth, async (req, res) => {
   }
 });
 
-app.post('/api/medicines', requireAuth, async (req, res) => {
-  const { code, name, category, quantity, unit, min_threshold, image } = req.body;
-  try {
-    const result = await pool.query(
-      `INSERT INTO medicines (code, name, category, quantity, unit, min_threshold, image) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-      [code, name, category, quantity || 0, unit || 'เม็ด', min_threshold || 10, image || '']
-    );
-    res.json({ success: true, id: result.rows[0].id });
-  } catch (err) {
-    res.status(400).json({ error: 'รหัสยานี้มีในระบบแล้ว หรือข้อมูลไม่ถูกต้อง' });
-  }
-});
-
-app.put('/api/medicines/:id', requireAuth, async (req, res) => {
-  const { code, name, category, quantity, unit, min_threshold, image } = req.body;
-  try {
-    await pool.query(
-      `UPDATE medicines 
-       SET code = $1, name = $2, category = $3, quantity = $4, unit = $5, min_threshold = $6, image = $7 
-       WHERE id = $8`,
-      [code, name, category, quantity, unit, min_threshold, image || '', req.params.id]
-    );
-    res.json({ success: true });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
+// เพิ่มรายการยา (มีฟังก์ชันเดียว ปรับแปลงตัวเลข และคืน Error จริงจาก DB)
 app.post('/api/medicines', requireAuth, async (req, res) => {
   const { code, name, category, quantity, unit, min_threshold, image } = req.body;
   try {
@@ -116,7 +99,44 @@ app.post('/api/medicines', requireAuth, async (req, res) => {
     res.json({ success: true, id: result.rows[0].id });
   } catch (err) {
     console.error('❌ Insert Error:', err.message);
-    res.status(400).json({ error: err.message }); // ส่งข้อความ Error จริงจาก PostgreSQL ออกมาแสดง
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.put('/api/medicines/:id', requireAuth, async (req, res) => {
+  const { code, name, category, quantity, unit, min_threshold, image } = req.body;
+  try {
+    await pool.query(
+      `UPDATE medicines 
+       SET code = $1, name = $2, category = $3, quantity = $4, unit = $5, min_threshold = $6, image = $7 
+       WHERE id = $8`,
+      [
+        code, 
+        name, 
+        category, 
+        parseInt(quantity, 10) || 0, 
+        unit, 
+        parseInt(min_threshold, 10) || 10, 
+        image || '', 
+        req.params.id
+      ]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.post('/api/medicines/:id/adjust', requireAuth, async (req, res) => {
+  const { amount } = req.body;
+  try {
+    await pool.query(
+      `UPDATE medicines SET quantity = GREATEST(0, quantity + $1) WHERE id = $2`,
+      [parseInt(amount, 10) || 0, req.params.id]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 
